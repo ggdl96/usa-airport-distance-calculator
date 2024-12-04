@@ -1,10 +1,14 @@
-import React, { useEffect } from 'react';
-import { GoogleMap, DirectionsRenderer } from '@react-google-maps/api';
-import useGoogleMaps from '@/hooks/useGoogleMaps';
+import React from "react";
+import {
+  GoogleMap,
+  Polyline,
+} from "@react-google-maps/api";
+import { Coordinates } from "@/types/Geo";
+import tailwindFullConfig from "@/utils/tailwind-theme";
 
 const containerStyle = {
-  width: '100%',
-  height: '400px',
+  width: "100%",
+  height: "400px",
 };
 
 const center = {
@@ -12,21 +16,28 @@ const center = {
   lng: -122.4194,
 };
 
-const MapDisplay = ({ origin, destination }: {
-  origin: string, destination: string
+const MapDisplay = ({
+  origin,
+  destination,
+  isLoading
+}: {
+  origin: Coordinates;
+  destination: Coordinates;
+  isLoading: boolean
 }) => {
-    const data = useGoogleMaps();
 
-    useEffect(() => {
-      if (data.isLoaded) {
-        data.fetchRoute(origin, destination)
-    }
-    }, [origin, destination, data.isLoaded, data]);
-  if (!data.isLoaded) return <div>Loading...</div>;
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={7}>
-      {data.directionsResponse && <DirectionsRenderer directions={data.directionsResponse} />}
+      <Polyline
+        path={[origin, destination]}
+        options={{
+          strokeColor: tailwindFullConfig.theme.colors.input,
+          strokeOpacity: 0.6,
+          strokeWeight: 2,
+        }}
+      />
     </GoogleMap>
   );
 };

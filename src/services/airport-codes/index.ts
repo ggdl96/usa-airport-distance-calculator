@@ -1,8 +1,8 @@
 import { autocomplete } from "air-port-codes-node";
 
 const apca = autocomplete({
-  key: "xxxxxxxxxxx",
-  secret: "xxxxxxxxxxxxxxx", // Your API Secret Key: use this if you are not connecting from a web server
+  key: process.env.APP_API_TOKEN,
+  // secret: "some secret",
   limit: 15,
 });
 

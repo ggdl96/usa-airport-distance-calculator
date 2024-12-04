@@ -9,6 +9,10 @@ import {
   caclculateDistanceBetweenTwoPoints,
   kmsToMiles,
 } from "@/utils/distance-calculator";
+import apca from "@/services/airport-codes";
+import useGoogleMaps from "@/hooks/useGoogleMaps";
+import { Coordinates } from "@/types/Geo";
+import { fetchCoordinates } from "@/utils/geo";
 
 interface Props {
   airportList: AirportList;
@@ -21,7 +25,46 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
   const [fromSelected, setFromSelected] = useState("");
   const [toSelected, setToSelected] = useState("");
 
+  const [coordinatesOrigin, setCoordinatesOrigin] =
+    useState<Coordinates | null>();
+  const [coordinatesDestination, setCoordinatesDestination] =
+    useState<Coordinates | null>();
   const [distanceInMiles, setDistanceInMiles] = useState(0);
+
+  const data = useGoogleMaps();
+
+  useEffect(() => {
+    if (data.isLoaded) {
+      fetchCoordinates(
+        airportList.find((airport) => airport.code === fromSelected)?.name ??
+          "",
+        (result, status) => {
+          if (status === google.maps.GeocoderStatus.OK) {
+            if (result) {
+              setCoordinatesOrigin({
+                lat: result[0].geometry.location.lat(),
+                lng: result[0].geometry.location.lng(),
+              });
+            }
+          }
+        }
+      );
+
+      fetchCoordinates(
+        airportList.find((airport) => airport.code === toSelected)?.name ?? "",
+        (result, status) => {
+          if (status === google.maps.GeocoderStatus.OK) {
+            if (result) {
+              setCoordinatesDestination({
+                lat: result[0].geometry.location.lat(),
+                lng: result[0].geometry.location.lng(),
+              });
+            }
+          }
+        }
+      );
+    }
+  }, [airportList, data.isLoaded, fromSelected, toSelected]);
 
   useEffect(() => {
     if (airportList.length) {
@@ -46,28 +89,28 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
   }, [airportList, fromSelected, toSelected]);
 
   useEffect(() => {
-    if (fromSelected && toSelected) {
-      // TODO IMPROVE, THIS IS FOR TESTING PURPOSES
-      setDistanceInMiles(212);
+    if (coordinatesOrigin && coordinatesDestination) {
+      const distance = caclculateDistanceBetweenTwoPoints(
+        coordinatesOrigin,
+        coordinatesDestination
+      );
+      setDistanceInMiles(kmsToMiles(distance));
     } else {
       setDistanceInMiles(0);
     }
-  }, [fromSelected, toSelected]);
+  }, [coordinatesDestination, coordinatesOrigin]);
 
   useEffect(() => {
-    // TODO THIS HAS TO BE DYNAMIC Example Usage
-    const coord1 = { lat: 37.7749, lng: -122.4194 }; // San Francisco
-    const coord2 = { lat: 34.0522, lng: -118.2437 }; // Los Angeles
-    const distance = caclculateDistanceBetweenTwoPoints(coord1, coord2);
+    const func = async () => {
+      try {
+        const a = apca.request("new yo");
+      } catch (error) {
+        console.error("error", error);
+      }
+    };
 
-    console.log(
-      `Distance: ${distance} km, ${kmsToMiles(distance)} nautical miles`
-    );
+    func();
   }, []);
-
-  const originArport = "San Francisco, CA";
-  const destinationAirport = "Los Angeles, CA";
-
   return (
     <div className="flex flex-col justify-center items-center bg-background-form rounded-md shadow-background-form shadow-md">
       <div className="flex flex-col sm:flex-row pb-4">
@@ -90,13 +133,17 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
           />
         </div>
       </div>
-      {distanceInMiles ? (
+      {distanceInMiles && coordinatesDestination && coordinatesOrigin ? (
         <>
           <h2 className="text-lg">Distance:</h2>
-          <p className="text-xl font-bold">{`${distanceInMiles} nautic mile${
-            distanceInMiles === 1 ? "" : "s"
-          }`}</p>
-          <MapDisplay origin={originArport} destination={destinationAirport} />
+          <p className="text-xl font-bold">{`${distanceInMiles.toFixed(
+            2
+          )} nautic mile${distanceInMiles === 1 ? "" : "s"}`}</p>
+          <MapDisplay
+            origin={coordinatesOrigin}
+            destination={coordinatesDestination}
+            isLoading={data.isLoaded}
+          />
         </>
       ) : null}
     </div>

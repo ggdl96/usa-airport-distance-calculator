@@ -1,7 +1,4 @@
-type Coordinates = {
-  lat: number;
-  lng: number;
-};
+import { Coordinates } from "@/types/Geo";
 
 export const caclculateDistanceBetweenTwoPoints = (
   coordinatesA: Coordinates,
