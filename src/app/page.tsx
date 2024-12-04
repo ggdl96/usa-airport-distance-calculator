@@ -5,26 +5,26 @@ export default function Home() {
   const airportList: AirportList = [
     {
       code: "SA",
-      name: "SA SA AS"
+      name: "SA SA AS (SA)"
     },
     {
       code: "SA2",
-      name: "SA2 2s"
+      name: "SA2 2s (SA2)"
     },
     {
       code: "SA3",
-      name: "SA3 ese"
+      name: "SA3 ese (SA3)"
     },
     {
       code: "SA4",
-      name: "SA 4 4 4"
+      name: "SA 4 4 4 (SA4)"
     },
   ];
 
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <h1>USA Airport distance calculator</h1>
+        <h1 className="text-3xl">USA Airport distance calculator</h1>
         <DistanceCalculator airportList={airportList} />
       </main>
       <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">

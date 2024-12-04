@@ -18,8 +18,8 @@ export default function SearchInput({
   );
 
   useEffect(() => {
-    setValue(selectedValue);
-  }, [selectedValue]);
+    setValue(options.find((e) => e.value === selectedValue)?.label ?? '');
+  }, [options, selectedValue]);
 
   useEffect(() => {
     if (value) {
@@ -27,8 +27,7 @@ export default function SearchInput({
         options.filter((item) => {
           return (
             item.value.toLowerCase().includes(value.toLowerCase()) ||
-            item.label.toLowerCase().includes(value.toLowerCase()) /*&&
-              toSelected !== item.code*/
+            item.label.toLowerCase().includes(value.toLowerCase())
           );
         })
       );
@@ -44,8 +43,9 @@ export default function SearchInput({
 
   return (
     <div className="flex flex-col">
+      <div className="pb-1">
       <input
-        className="pb-2"
+        className="rounded-md p-4 text-lg"
         value={value}
         onChange={(event) => {
           setValue(event.target.value);
@@ -54,6 +54,7 @@ export default function SearchInput({
         type="search"
         placeholder="Search origin Airport..."
       ></input>
+      </div>
       {optionsToDisplay.length && !selectedValue ? (
         <ul>
           {optionsToDisplay.map((item) => (

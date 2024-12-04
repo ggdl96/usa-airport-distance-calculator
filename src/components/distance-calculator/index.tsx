@@ -20,17 +20,25 @@ export default function DistanceCalculator({ airportList }: Props) {
 
   useEffect(() => {
     if (airportList.length) {
-      setFromOptions(airportList.filter(item => item.code !== toSelected).map((item) => ({
-        value: item.code,
-        label: item.name,
-      })))
+      setFromOptions(
+        airportList
+          .filter((item) => item.code !== toSelected)
+          .map((item) => ({
+            value: item.code,
+            label: item.name,
+          }))
+      );
 
-      setToOptions(airportList.filter(item => item.code !== fromSelected).map((item) => ({
-        value: item.code,
-        label: item.name,
-      })))
+      setToOptions(
+        airportList
+          .filter((item) => item.code !== fromSelected)
+          .map((item) => ({
+            value: item.code,
+            label: item.name,
+          }))
+      );
     }
-  }, [airportList, fromSelected, toSelected])
+  }, [airportList, fromSelected, toSelected]);
 
   useEffect(() => {
     if (fromSelected && toSelected) {
@@ -40,29 +48,33 @@ export default function DistanceCalculator({ airportList }: Props) {
   }, [fromSelected, toSelected]);
 
   return (
-    <div>
-      <div className="w-full pb-2 pt-2">
-        <SearchInput
-          options={fromOptions}
-          onSelect={function (value: string): void {
-            setFromSelected(value);
-          }}
-          selectedValue={fromSelected}
-        />
-      </div>
-      <div className="w-full pb-8 pt-2">
-        <SearchInput
-          options={toOptions}
-          onSelect={function (value: string): void {
-            setToSelected(value);
-          }}
-          selectedValue={toSelected}
-        />
+    <div className="flex flex-col justify-center items-center bg-background-form rounded-md shadow-background-form shadow-md">
+      <div className="flex flex-col sm:flex-row pb-4">
+        <div className="w-full p-2">
+          <SearchInput
+            options={fromOptions}
+            onSelect={function (value: string): void {
+              setFromSelected(value);
+            }}
+            selectedValue={fromSelected}
+          />
+        </div>
+        <div className="w-full p-2">
+          <SearchInput
+            options={toOptions}
+            onSelect={function (value: string): void {
+              setToSelected(value);
+            }}
+            selectedValue={toSelected}
+          />
+        </div>
       </div>
       {distanceInMiles ? (
         <>
-          <h2>Distance in nautic miles</h2>
-          <p>{distanceInMiles}</p>
+          <h2 className="text-lg">Distance:</h2>
+          <p className="text-xl font-bold">{`${distanceInMiles} nautic mile${
+            distanceInMiles === 1 ? "" : "s"
+          }`}</p>
         </>
       ) : null}
     </div>
