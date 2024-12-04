@@ -4,12 +4,17 @@ import SearchInput from "@/components/search-input";
 import { AirportList } from "@/types/airport";
 import { SelectOptionList } from "@/types/select";
 import { useEffect, useState } from "react";
+import MapDisplay from "../map-display";
+import {
+  caclculateDistanceBetweenTwoPoints,
+  kmsToMiles,
+} from "@/utils/distance-calculator";
 
 interface Props {
   airportList: AirportList;
 }
 
-export default function DistanceCalculator({ airportList }: Props) {
+export default function DistanceCalculator({ airportList }: Readonly<Props>) {
   const [fromOptions, setFromOptions] = useState<SelectOptionList>([]);
   const [toOptions, setToOptions] = useState<SelectOptionList>([]);
 
@@ -49,6 +54,20 @@ export default function DistanceCalculator({ airportList }: Props) {
     }
   }, [fromSelected, toSelected]);
 
+  useEffect(() => {
+    // TODO THIS HAS TO BE DYNAMIC Example Usage
+    const coord1 = { lat: 37.7749, lng: -122.4194 }; // San Francisco
+    const coord2 = { lat: 34.0522, lng: -118.2437 }; // Los Angeles
+    const distance = caclculateDistanceBetweenTwoPoints(coord1, coord2);
+
+    console.log(
+      `Distance: ${distance} km, ${kmsToMiles(distance)} nautical miles`
+    );
+  }, []);
+
+  const originArport = "San Francisco, CA";
+  const destinationAirport = "Los Angeles, CA";
+
   return (
     <div className="flex flex-col justify-center items-center bg-background-form rounded-md shadow-background-form shadow-md">
       <div className="flex flex-col sm:flex-row pb-4">
@@ -77,6 +96,7 @@ export default function DistanceCalculator({ airportList }: Props) {
           <p className="text-xl font-bold">{`${distanceInMiles} nautic mile${
             distanceInMiles === 1 ? "" : "s"
           }`}</p>
+          <MapDisplay origin={originArport} destination={destinationAirport} />
         </>
       ) : null}
     </div>
