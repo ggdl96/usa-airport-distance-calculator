@@ -1,16 +1,18 @@
 "use client";
 
 import { SelectOptionList } from "@/types/select";
-import { useEffect, useState } from "react";
+import { KeyboardEventHandler, useEffect, useState } from "react";
 
 export default function SearchInput({
   options,
   selectedValue,
   onSelect,
+  placeholder='Search...',
 }: Readonly<{
   options: SelectOptionList;
   onSelect: (value: string) => void;
   selectedValue: string;
+  placeholder?: string;
 }>) {
   const [value, setValue] = useState("");
   const [optionsToDisplay, setOptionsToDisplay] = useState<SelectOptionList>(
@@ -42,7 +44,7 @@ export default function SearchInput({
     }
   }, [onSelect, value]);
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
     if (value) {
       if (e.key === "ArrowDown") {
         setHighlightedOption((prevIndex) =>
@@ -62,16 +64,16 @@ export default function SearchInput({
 
   return (
     <div className="flex flex-col">
-      <div className="">
+      <div className="flex">
         <input
-          className="rounded-md p-4 text-lg"
+          className="rounded-md p-4 text-lg flex-1"
           value={value}
           onChange={(event) => {
             setValue(event.target.value);
             onSelect("");
           }}
           type="search"
-          placeholder="Search origin Airport..."
+          placeholder={placeholder}
           onBlur={() => {
             setOptionsToDisplay([]);
           }}

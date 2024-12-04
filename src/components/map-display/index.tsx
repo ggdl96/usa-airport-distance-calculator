@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  GoogleMap,
-  Polyline,
-} from "@react-google-maps/api";
+import { GoogleMap, Polyline } from "@react-google-maps/api";
 import { Coordinates } from "@/types/Geo";
 import tailwindFullConfig from "@/utils/tailwind-theme";
 
@@ -11,21 +8,17 @@ const containerStyle = {
   height: "400px",
 };
 
-const center = {
-  lat: 37.7749, // Example: San Francisco
-  lng: -122.4194,
-};
-
 const MapDisplay = ({
   origin,
   destination,
-  isLoading
+  isLoading,
+  center = { lat: 37.7749, lng: -122.4194 },
 }: {
   origin: Coordinates;
   destination: Coordinates;
-  isLoading: boolean
+  isLoading: boolean;
+  center?: Coordinates;
 }) => {
-
   if (isLoading) return <div>Loading...</div>;
 
   return (

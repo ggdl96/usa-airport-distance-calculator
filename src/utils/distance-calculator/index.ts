@@ -21,4 +21,13 @@ export const caclculateDistanceBetweenTwoPoints = (
   return R * c; // Distance in kilometers
 };
 
-export const kmsToMiles = (distanceInKM: number) => distanceInKM * 0.5399565
+export const kmsToMiles = (distanceInKM: number) => distanceInKM * 0.5399565;
+
+export const calculateCenterOfTwoCoordinates = (
+  coordinatesA: Coordinates,
+  coordinatesB: Coordinates
+): Coordinates => {
+  const centerLat = (coordinatesA.lat + coordinatesB.lat) / 2;
+  const centerLng = (coordinatesA.lng + coordinatesB.lng) / 2;
+  return { lat: centerLat, lng: centerLng };
+};

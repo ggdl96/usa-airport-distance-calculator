@@ -7,9 +7,9 @@ import { useEffect, useState } from "react";
 import MapDisplay from "../map-display";
 import {
   caclculateDistanceBetweenTwoPoints,
+  calculateCenterOfTwoCoordinates,
   kmsToMiles,
 } from "@/utils/distance-calculator";
-import apca from "@/services/airport-codes";
 import useGoogleMaps from "@/hooks/useGoogleMaps";
 import { Coordinates } from "@/types/Geo";
 import { fetchCoordinates } from "@/utils/geo";
@@ -103,7 +103,6 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
   useEffect(() => {
     const func = async () => {
       try {
-        const a = apca.request("new yo");
       } catch (error) {
         console.error("error", error);
       }
@@ -112,37 +111,42 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
     func();
   }, []);
   return (
-    <div className="flex flex-col justify-center items-center bg-background-form rounded-md shadow-background-form shadow-md">
-      <div className="flex flex-col sm:flex-row pb-4">
-        <div className="w-full p-2">
+    <div className="flex flex-col justify-center items-center bg-background-form rounded-md shadow-background-form shadow-md w-full">
+      <div className="flex flex-col sm:flex-row pb-4 w-full">
+        <div className="w-full sm:w-1/2 p-2">
           <SearchInput
             options={fromOptions}
             onSelect={function (value: string): void {
               setFromSelected(value);
             }}
             selectedValue={fromSelected}
+            placeholder={"Search origin Airport..."}
           />
         </div>
-        <div className="w-full p-2">
+        <div className="w-full sm:w-1/2 p-2">
           <SearchInput
             options={toOptions}
             onSelect={function (value: string): void {
               setToSelected(value);
             }}
             selectedValue={toSelected}
+            placeholder={"Search destination Airport..."}
           />
         </div>
       </div>
       {distanceInMiles && coordinatesDestination && coordinatesOrigin ? (
         <>
-          <h2 className="text-lg">Distance:</h2>
-          <p className="text-xl font-bold">{`${distanceInMiles.toFixed(
-            2
-          )} nautic mile${distanceInMiles === 1 ? "" : "s"}`}</p>
+          <div className="pb-4">
+            <h2 className="text-lg">Distance:</h2>
+            <p className="text-xl font-bold">{`${distanceInMiles.toFixed(
+              2
+            )} nautic mile${distanceInMiles === 1 ? "" : "s"}`}</p>
+          </div>
           <MapDisplay
             origin={coordinatesOrigin}
             destination={coordinatesDestination}
-            isLoading={data.isLoaded}
+            isLoading={!data.isLoaded}
+            center={calculateCenterOfTwoCoordinates(coordinatesDestination, coordinatesOrigin)}
           />
         </>
       ) : null}
