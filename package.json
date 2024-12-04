@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "check:types": "tsc --noemit",
+    "lint": "next lint && npm run check:types"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.3",
