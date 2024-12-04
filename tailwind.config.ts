@@ -12,6 +12,8 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
         'background-form': '#243c5a24',
+        input: "var(--input)",
+        'option-highlight': "#c3d5cb",
       },
     },
   },

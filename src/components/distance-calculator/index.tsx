@@ -44,6 +44,8 @@ export default function DistanceCalculator({ airportList }: Props) {
     if (fromSelected && toSelected) {
       // TODO IMPROVE, THIS IS FOR TESTING PURPOSES
       setDistanceInMiles(212);
+    } else {
+      setDistanceInMiles(0);
     }
   }, [fromSelected, toSelected]);
 

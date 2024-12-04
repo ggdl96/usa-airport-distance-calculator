@@ -7,18 +7,19 @@ export default function SearchInput({
   options,
   selectedValue,
   onSelect,
-}: {
+}: Readonly<{
   options: SelectOptionList;
   onSelect: (value: string) => void;
   selectedValue: string;
-}) {
+}>) {
   const [value, setValue] = useState("");
   const [optionsToDisplay, setOptionsToDisplay] = useState<SelectOptionList>(
     []
   );
 
+  const [highlightedOption, setHighlightedOption] = useState(-1);
   useEffect(() => {
-    setValue(options.find((e) => e.value === selectedValue)?.label ?? '');
+    setValue(options.find((e) => e.value === selectedValue)?.label ?? "");
   }, [options, selectedValue]);
 
   useEffect(() => {
@@ -41,31 +42,62 @@ export default function SearchInput({
     }
   }, [onSelect, value]);
 
+  const handleKeyDown = (e) => {
+    if (value) {
+      if (e.key === "ArrowDown") {
+        setHighlightedOption((prevIndex) =>
+          Math.min(prevIndex + 1, optionsToDisplay.length - 1)
+        );
+      } else if (e.key === "ArrowUp") {
+        setHighlightedOption((prevIndex) => Math.max(prevIndex - 1, 0));
+      } else if (e.key === "Enter" && highlightedOption >= 0) {
+        onSelect(optionsToDisplay[highlightedOption].value);
+        setOptionsToDisplay([]);
+      } else if (e.key === "Escape") {
+        setOptionsToDisplay([]);
+        onSelect("");
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col">
-      <div className="pb-1">
-      <input
-        className="rounded-md p-4 text-lg"
-        value={value}
-        onChange={(event) => {
-          setValue(event.target.value);
-          onSelect("");
-        }}
-        type="search"
-        placeholder="Search origin Airport..."
-      ></input>
+      <div className="">
+        <input
+          className="rounded-md p-4 text-lg"
+          value={value}
+          onChange={(event) => {
+            setValue(event.target.value);
+            onSelect("");
+          }}
+          type="search"
+          placeholder="Search origin Airport..."
+          onBlur={() => {
+            setOptionsToDisplay([]);
+          }}
+          aria-autocomplete="list"
+          aria-haspopup="listbox"
+          onKeyDown={handleKeyDown}
+        ></input>
       </div>
       {optionsToDisplay.length && !selectedValue ? (
-        <ul>
-          {optionsToDisplay.map((item) => (
-            <li
+        <ul className="bg-foreground rounded-b-sm">
+          {optionsToDisplay.map((item, index) => (
+            <option
+              className={`text-input p-4 ${
+                highlightedOption === index ? "bg-option-highlight" : ""
+              }`}
               key={item.value}
-              onClick={() => {
+              onMouseDown={() => {
                 onSelect(item.value);
+              }}
+              aria-selected={highlightedOption === index}
+              onMouseEnter={() => {
+                setHighlightedOption(index);
               }}
             >
               {item.label}
-            </li>
+            </option>
           ))}
         </ul>
       ) : null}
