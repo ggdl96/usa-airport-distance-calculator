@@ -35,34 +35,41 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
 
   useEffect(() => {
     if (data.isLoaded) {
-      fetchCoordinates(
-        airportList.find((airport) => airport.code === fromSelected)?.name ??
-          "",
-        (result, status) => {
-          if (status === google.maps.GeocoderStatus.OK) {
-            if (result) {
-              setCoordinatesOrigin({
-                lat: result[0].geometry.location.lat(),
-                lng: result[0].geometry.location.lng(),
-              });
+      if (fromSelected && toSelected) {
+        fetchCoordinates(
+          airportList.find((airport) => airport.code === fromSelected)?.name ??
+            "",
+          (result, status) => {
+            if (status === google.maps.GeocoderStatus.OK) {
+              if (result) {
+                setCoordinatesOrigin({
+                  lat: result[0].geometry.location.lat(),
+                  lng: result[0].geometry.location.lng(),
+                });
+              }
             }
           }
-        }
-      );
+        );
+  
+        fetchCoordinates(
+          airportList.find((airport) => airport.code === toSelected)?.name ?? "",
+          (result, status) => {
+            if (status === google.maps.GeocoderStatus.OK) {
+              if (result) {
+                setCoordinatesDestination({
+                  lat: result[0].geometry.location.lat(),
+                  lng: result[0].geometry.location.lng(),
+                });
+              }
+            }
+          }
+        );
 
-      fetchCoordinates(
-        airportList.find((airport) => airport.code === toSelected)?.name ?? "",
-        (result, status) => {
-          if (status === google.maps.GeocoderStatus.OK) {
-            if (result) {
-              setCoordinatesDestination({
-                lat: result[0].geometry.location.lat(),
-                lng: result[0].geometry.location.lng(),
-              });
-            }
-          }
-        }
-      );
+        return () => {
+          setCoordinatesDestination(null);
+          setCoordinatesOrigin(null);
+        };
+      }
     }
   }, [airportList, data.isLoaded, fromSelected, toSelected]);
 
@@ -137,7 +144,7 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
       {distanceInMiles && coordinatesDestination && coordinatesOrigin ? (
         <>
           <div className="pb-4">
-            <h2 className="text-lg">Distance:</h2>
+            <h2 className="text-lg">Distance between airports:</h2>
             <p className="text-xl font-bold">{`${distanceInMiles.toFixed(
               2
             )} nautic mile${distanceInMiles === 1 ? "" : "s"}`}</p>
