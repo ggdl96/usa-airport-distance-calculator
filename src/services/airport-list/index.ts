@@ -1,3 +1,4 @@
+import { transformToAirports } from "@/mappers/airport-codes";
 import { AirportList } from "@/types/airport";
 
 const data = {
@@ -176,15 +177,19 @@ const data = {
 } as const;
 
 export function getList(term: string): Promise<AirportList> {
-  const promise: Promise<AirportList> = new Promise((resolve) => {
+  const promise: Promise<AirportList> = new Promise((resolve, reject) => {
     setTimeout(() => {
-      resolve(
-        data.airports.map((item) => ({
-          code: item.iata,
-          name: item.name,
-        })).filter((item) => item.name.toLowerCase().includes(term.toLowerCase()) ||
-        item.code.toLowerCase().includes(term.toLowerCase()))
-      );
+      try {
+        const response = transformToAirports(data).filter(
+          (item) =>
+            item.name.toLowerCase().includes(term.toLowerCase()) ||
+            item.code.toLowerCase().includes(term.toLowerCase())
+        );
+        resolve(response);
+      } catch (error) {
+        console.log('error get list: ', error);
+        reject(reject);
+      }
     }, 2000);
   });
 

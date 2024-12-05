@@ -104,23 +104,33 @@ export default function DistanceCalculator() {
 
   const inputCCS = "w-full lg:w-1/2 p-2";
 
+  const onError = () => {
+    console.error('there was an error requesting the airport list');
+  };
+
   const onSearchFrom = function (search: string): void {
     const promise = async () => {
       setFromSearchStatus('LOADING');
-
-      const result = await getList(search);
-      setFromSearchStatus('DONE');
       const data: SelectOptionList = [];
-      for (const item of result) {
-        if (item.code !== toSelected) {
-          data.push({
-            value: item.code,
-            label: item.name,
-          });
-        }
-      }
 
-      setFromOptions(data);
+      try {
+        const result = await getList(search);
+        setFromSearchStatus('DONE');
+        for (const item of result) {
+          if (item.code !== toSelected) {
+            data.push({
+              value: item.code,
+              label: item.name,
+            });
+          }
+        }
+  
+        setFromOptions(data);
+
+      } catch (error) {
+        onError();
+        console.error('error, search origin', error);
+      }
     };
 
     promise();
@@ -128,20 +138,26 @@ export default function DistanceCalculator() {
   const onSearchTo = function (search: string): void {
     const promise = async () => {
       setToSearchStatus('LOADING');
-      const result = await getList(search);
-      setToSearchStatus('DONE');
 
       const data: SelectOptionList = [];
-      for (const item of result) {
-        if (item.code !== fromSelected) {
-          data.push({
-            value: item.code,
-            label: item.name,
-          });
+      try {
+        const result = await getList(search);
+        setToSearchStatus('DONE');
+  
+        for (const item of result) {
+          if (item.code !== fromSelected) {
+            data.push({
+              value: item.code,
+              label: item.name,
+            });
+          }
         }
+  
+        setToOptions(data);
+      } catch (error) {
+        onError();
+        console.error('error, search origin', error);
       }
-
-      setToOptions(data);
     };
 
     promise();
