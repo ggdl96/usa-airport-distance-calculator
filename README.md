@@ -15,7 +15,17 @@ npm i
 
 ## Getting Started
 
-First, run the development server:
+First, you will need to set up env variables
+
+```text
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
+AIRLABS_API=
+AIRLABS_API_KEY=
+COUNTRY_CODE=
+
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
@@ -26,3 +36,10 @@ pnpm dev
 # or
 bun dev
 ```
+
+## Things to improve
+
+- add more tests to have better coverage
+- cancel previous requests to avoid making unnecessary calls
+- improve map zoom, it must be more dynamic
+- improve query params usage, probably better to use URLSearchParams
