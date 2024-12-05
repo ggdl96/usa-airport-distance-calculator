@@ -39,33 +39,27 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
   useEffect(() => {
     if (data.isLoaded) {
       if (fromSelectedName && toSelectedName) {
-        fetchCoordinates(
-          fromSelectedName,
-          (result, status) => {
-            if (status === google.maps.GeocoderStatus.OK) {
-              if (result) {
-                setCoordinatesOrigin({
-                  lat: result[0].geometry.location.lat(),
-                  lng: result[0].geometry.location.lng(),
-                });
-              }
+        fetchCoordinates(fromSelectedName, (result, status) => {
+          if (status === google.maps.GeocoderStatus.OK) {
+            if (result) {
+              setCoordinatesOrigin({
+                lat: result[0].geometry.location.lat(),
+                lng: result[0].geometry.location.lng(),
+              });
             }
           }
-        );
+        });
 
-        fetchCoordinates(
-          toSelectedName,
-          (result, status) => {
-            if (status === google.maps.GeocoderStatus.OK) {
-              if (result) {
-                setCoordinatesDestination({
-                  lat: result[0].geometry.location.lat(),
-                  lng: result[0].geometry.location.lng(),
-                });
-              }
+        fetchCoordinates(toSelectedName, (result, status) => {
+          if (status === google.maps.GeocoderStatus.OK) {
+            if (result) {
+              setCoordinatesDestination({
+                lat: result[0].geometry.location.lat(),
+                lng: result[0].geometry.location.lng(),
+              });
             }
           }
-        );
+        });
 
         return () => {
           setCoordinatesDestination(null);
@@ -128,13 +122,14 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
   const handleOnSelectTo = function (value: string): void {
     setToSelected(value);
     setToSelectedName(getNameFromAirportCode(airportList, value));
-
   };
 
+  const inputCCS = 'w-full lg:w-1/2 p-2';
+
   return (
-    <div className="flex flex-col justify-center items-center bg-background-form rounded-md shadow-background-form shadow-md w-full">
-      <div className="flex flex-col sm:flex-row pb-4 w-full">
-        <div className="w-full sm:w-1/2 p-2">
+    <div className="flex flex-col items-center bg-background-form rounded-md shadow-background-form shadow-md w-full max-h-[88vh] min-h-[48vh]">
+      <div className="flex flex-col lg:flex-row pb-4 w-full flex-wrap lg:justify-center">
+        <div className={inputCCS}>
           <SearchInput
             options={fromOptions}
             onSelect={handleOnSelectFrom}
@@ -142,7 +137,7 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
             placeholder={"Search origin Airport..."}
           />
         </div>
-        <div className="w-full sm:w-1/2 p-2">
+        <div className={inputCCS}>
           <SearchInput
             options={toOptions}
             onSelect={handleOnSelectTo}

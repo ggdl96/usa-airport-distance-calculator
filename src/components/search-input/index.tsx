@@ -100,10 +100,10 @@ export default function SearchInput({
   };
 
   return (
-    <div className="flex flex-col">
-      <div className="flex">
+    <div className="flex flex-col w-auto">
+      <div className="flex w-auto flex-wrap">
         <input
-          className="rounded-md p-4 text-lg flex-1"
+          className="rounded-md p-4 text-lg w-full"
           value={value}
           onChange={handleOnChange}
           type="search"
@@ -114,14 +114,16 @@ export default function SearchInput({
           onKeyDown={handleKeyDown}
           onFocus={handleOnFocus}
         ></input>
+        <div className="w-full relative">
+          <Dropdown
+            options={optionsToDisplay}
+            onSelect={onSelect}
+            show={showDropdown}
+            highlightedOption={highlightedOption}
+            setHighlightedOption={handleOnSetHighlighted}
+          />
+        </div>
       </div>
-      <Dropdown
-        options={optionsToDisplay}
-        onSelect={onSelect}
-        show={showDropdown}
-        highlightedOption={highlightedOption}
-        setHighlightedOption={handleOnSetHighlighted}
-      />
     </div>
   );
 }
