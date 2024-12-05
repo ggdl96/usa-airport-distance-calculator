@@ -119,9 +119,9 @@ export default function DistanceCalculator() {
         const result = await getLocal(search);
         setFromSearchStatus('DONE');
         for (const item of result) {
-          if (item.code !== toSelected) {
+          if (item.id !== toSelected) {
             data.push({
-              value: item.code,
+              value: item.id,
               label: item.name,
             });
           }
@@ -148,9 +148,9 @@ export default function DistanceCalculator() {
         setToSearchStatus('DONE');
   
         for (const item of result) {
-          if (item.code !== fromSelected) {
+          if (item.id !== fromSelected) {
             data.push({
-              value: item.code,
+              value: item.id,
               label: item.name,
             });
           }
