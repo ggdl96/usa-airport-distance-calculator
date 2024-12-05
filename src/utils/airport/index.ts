@@ -1,6 +1,6 @@
-import { AirportList } from "@/types/airport";
+import { SelectOptionList } from "@/types/select";
 
 export const getNameFromAirportCode = (
-  airportList: AirportList,
+  airportList: SelectOptionList,
   airportCode: string
-) => airportList.find((airport) => airport.code === airportCode)?.name ?? "";
+) => airportList.find((airport) => airport.value === airportCode)?.label ?? "";

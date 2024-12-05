@@ -17,7 +17,7 @@ export default function Dropdown({
 }>) {
   return show ? (
     options.length ? (
-      <ul className="bg-foreground rounded-b-sm absolute max-h-[10vh] overflow-y-scroll w-full">
+      <ul className="bg-foreground rounded-b-sm absolute max-h-[30vh] overflow-y-scroll w-full">
         {options.map((item, index) => (
           <option
             className={`text-input p-4 ${

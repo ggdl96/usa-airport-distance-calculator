@@ -4,12 +4,12 @@ describe("getNameFromAirportCode", () => {
   test("given MDQ iata (airport code) should return 'Astor Piazzolla  International Airport' name", () => {
     const airportList = [
       {
-        code: "MDQ",
-        name: "Astor Piazzolla  International Airport",
+        value: "MDQ",
+        label: "Astor Piazzolla  International Airport",
       },
       {
-        code: "WHP",
-        name: "Whiteman Airport",
+        value: "WHP",
+        label: "Whiteman Airport",
       },
     ];
 

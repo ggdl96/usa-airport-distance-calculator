@@ -1,7 +1,6 @@
 "use client";
 
 import SearchInput from "@/components/search-input";
-import { AirportList } from "@/types/airport";
 import { SelectOptionList } from "@/types/select";
 import { useEffect, useState } from "react";
 import MapDisplay from "../map-display";
@@ -14,14 +13,15 @@ import useGoogleMaps from "@/hooks/useGoogleMaps";
 import { Coordinates } from "@/types/Geo";
 import { fetchCoordinates } from "@/utils/geo";
 import { getNameFromAirportCode } from "@/utils/airport";
+import { getList } from "@/services/airport-list";
 
-interface Props {
-  airportList: AirportList;
-}
+type Status = "LOADING" | "DONE" | "DEFAULT";
 
-export default function DistanceCalculator({ airportList }: Readonly<Props>) {
+export default function DistanceCalculator() {
   const [fromOptions, setFromOptions] = useState<SelectOptionList>([]);
   const [toOptions, setToOptions] = useState<SelectOptionList>([]);
+  const [toSearchStatus, setToSearchStatus] = useState<Status>("DEFAULT");
+  const [fromSearchStatus, setFromSearchStatus] = useState<Status>("DEFAULT");
 
   const [fromSelected, setFromSelected] = useState("");
   const [fromSelectedName, setFromSelectedName] = useState("");
@@ -67,29 +67,7 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
         };
       }
     }
-  }, [airportList, data.isLoaded, fromSelectedName, toSelectedName]);
-
-  useEffect(() => {
-    if (airportList.length) {
-      setFromOptions(
-        airportList
-          .filter((item) => item.code !== toSelected)
-          .map((item) => ({
-            value: item.code,
-            label: item.name,
-          }))
-      );
-
-      setToOptions(
-        airportList
-          .filter((item) => item.code !== fromSelected)
-          .map((item) => ({
-            value: item.code,
-            label: item.name,
-          }))
-      );
-    }
-  }, [airportList, fromSelected, toSelected]);
+  }, [data.isLoaded, fromSelectedName, toSelectedName]);
 
   useEffect(() => {
     if (coordinatesOrigin && coordinatesDestination) {
@@ -116,15 +94,58 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
 
   const handleOnSelectFrom = function (value: string): void {
     setFromSelected(value);
-    setFromSelectedName(getNameFromAirportCode(airportList, value));
+    setFromSelectedName(getNameFromAirportCode(fromOptions, value));
   };
 
   const handleOnSelectTo = function (value: string): void {
     setToSelected(value);
-    setToSelectedName(getNameFromAirportCode(airportList, value));
+    setToSelectedName(getNameFromAirportCode(toOptions, value));
   };
 
-  const inputCCS = 'w-full lg:w-1/2 p-2';
+  const inputCCS = "w-full lg:w-1/2 p-2";
+
+  const onSearchFrom = function (search: string): void {
+    const promise = async () => {
+      setFromSearchStatus('LOADING');
+
+      const result = await getList(search);
+      setFromSearchStatus('DONE');
+      const data: SelectOptionList = [];
+      for (const item of result) {
+        if (item.code !== toSelected) {
+          data.push({
+            value: item.code,
+            label: item.name,
+          });
+        }
+      }
+
+      setFromOptions(data);
+    };
+
+    promise();
+  };
+  const onSearchTo = function (search: string): void {
+    const promise = async () => {
+      setToSearchStatus('LOADING');
+      const result = await getList(search);
+      setToSearchStatus('DONE');
+
+      const data: SelectOptionList = [];
+      for (const item of result) {
+        if (item.code !== fromSelected) {
+          data.push({
+            value: item.code,
+            label: item.name,
+          });
+        }
+      }
+
+      setToOptions(data);
+    };
+
+    promise();
+  };
 
   return (
     <div className="flex flex-col items-center bg-background-form rounded-md shadow-background-form shadow-md w-full max-h-[88vh] min-h-[48vh]">
@@ -135,6 +156,8 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
             onSelect={handleOnSelectFrom}
             selectedValue={fromSelected}
             placeholder={"Search origin Airport..."}
+            onSearch={onSearchFrom}
+            isLoading={toSearchStatus === "LOADING"}
           />
         </div>
         <div className={inputCCS}>
@@ -143,6 +166,8 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
             onSelect={handleOnSelectTo}
             selectedValue={toSelected}
             placeholder={"Search destination Airport..."}
+            onSearch={onSearchTo}
+            isLoading={fromSearchStatus === "LOADING"}
           />
         </div>
       </div>

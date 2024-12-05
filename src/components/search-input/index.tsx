@@ -5,7 +5,6 @@ import {
   ChangeEventHandler,
   FocusEventHandler,
   KeyboardEventHandler,
-  useCallback,
   useEffect,
   useState,
 } from "react";
@@ -16,43 +15,29 @@ export default function SearchInput({
   selectedValue,
   onSelect,
   placeholder = "Search...",
+  onSearch,
+  isLoading,
 }: Readonly<{
   options: SelectOptionList;
   onSelect: (value: string) => void;
   selectedValue: string;
   placeholder?: string;
+  onSearch: (search: string) => void;
+  isLoading: boolean;
 }>) {
   const [value, setValue] = useState("");
-  const [optionsToDisplay, setOptionsToDisplay] = useState<SelectOptionList>(
-    []
-  );
 
   const [highlightedOption, setHighlightedOption] = useState(-1);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const displayOptions = useCallback(() => {
-    setOptionsToDisplay(
-      options.filter((item) => {
-        return (
-          item.value.toLowerCase().includes(value.toLowerCase()) ||
-          item.label.toLowerCase().includes(value.toLowerCase())
-        );
-      })
-    );
-  }, [options, value]);
   useEffect(() => {
-    setValue(options.find((e) => e.value === selectedValue)?.label ?? "");
+    if (selectedValue) {
+      setValue(options.find((e) => e.value === selectedValue)?.label ?? "");
+    }
   }, [options, selectedValue]);
 
   useEffect(() => {
-    if (value) {
-      displayOptions();
-    }
-  }, [displayOptions, value]);
-
-  useEffect(() => {
     if (value === "") {
-      setOptionsToDisplay([]);
       onSelect("");
       setShowDropdown(false);
     }
@@ -62,16 +47,14 @@ export default function SearchInput({
     if (value) {
       if (e.key === "ArrowDown") {
         setHighlightedOption((prevIndex) =>
-          Math.min(prevIndex + 1, optionsToDisplay.length - 1)
+          Math.min(prevIndex + 1, options.length - 1)
         );
       } else if (e.key === "ArrowUp") {
         setHighlightedOption((prevIndex) => Math.max(prevIndex - 1, 0));
       } else if (e.key === "Enter" && highlightedOption >= 0) {
-        onSelect(optionsToDisplay[highlightedOption].value);
-        setOptionsToDisplay([]);
+        onSelect(options[highlightedOption].value);
         setShowDropdown(false);
       } else if (e.key === "Escape") {
-        setOptionsToDisplay([]);
         onSelect("");
         setShowDropdown(false);
       }
@@ -80,19 +63,21 @@ export default function SearchInput({
 
   const handleOnFocus: FocusEventHandler<HTMLInputElement> = () => {
     if (value && !selectedValue) {
-      displayOptions();
       setShowDropdown(true);
     }
   };
   const handleOnBlur: FocusEventHandler<HTMLInputElement> = () => {
-    setOptionsToDisplay([]);
     setShowDropdown(false);
   };
 
   const handleOnChange: ChangeEventHandler<HTMLInputElement> = (event) => {
     setValue(event.target.value);
     onSelect("");
-    setShowDropdown(true);
+
+    if (event.target.value.length >= 3) {
+      onSearch(event.target.value);
+      setShowDropdown(true);
+    }
   };
 
   const handleOnSetHighlighted = (index: number) => {
@@ -116,9 +101,9 @@ export default function SearchInput({
         ></input>
         <div className="w-full relative">
           <Dropdown
-            options={optionsToDisplay}
+            options={options}
             onSelect={onSelect}
-            show={showDropdown}
+            show={!isLoading && showDropdown}
             highlightedOption={highlightedOption}
             setHighlightedOption={handleOnSetHighlighted}
           />
