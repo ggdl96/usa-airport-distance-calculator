@@ -14,14 +14,15 @@ import { Coordinates } from "@/types/Geo";
 import { fetchCoordinates } from "@/utils/geo";
 import { getNameFromAirportCode } from "@/utils/airport";
 import { transformToAirports } from "@/mappers/airlabs";
-
-type Status = "LOADING" | "DONE" | "DEFAULT";
+import { RequestStatus } from "@/types/request-status";
 
 export default function DistanceCalculator() {
   const [fromOptions, setFromOptions] = useState<SelectOptionList>([]);
   const [toOptions, setToOptions] = useState<SelectOptionList>([]);
-  const [toSearchStatus, setToSearchStatus] = useState<Status>("DEFAULT");
-  const [fromSearchStatus, setFromSearchStatus] = useState<Status>("DEFAULT");
+  const [toSearchStatus, setToSearchStatus] =
+    useState<RequestStatus>("DEFAULT");
+  const [fromSearchStatus, setFromSearchStatus] =
+    useState<RequestStatus>("DEFAULT");
 
   const [fromSelected, setFromSelected] = useState("");
   const [fromSelectedName, setFromSelectedName] = useState("");
@@ -103,68 +104,72 @@ export default function DistanceCalculator() {
     }
 
     return [];
-  }
-
-  const onError = () => {
-    console.error('there was an error requesting the airport list');
   };
 
-  const onSearchFrom = useCallback(function (search: string): void {
-    const promise = async () => {
+  const onError = () => {
+    console.error("there was an error requesting the airport list");
+  };
 
-      setFromSearchStatus('LOADING');
-      const data: SelectOptionList = [];
-      
-      try {
-        const result = await getLocal(search);
-        setFromSearchStatus('DONE');
-        for (const item of result) {
-          if (item.id !== toSelected) {
-            data.push({
-              value: item.id,
-              label: item.name,
-            });
+  const onSearchFrom = useCallback(
+    function (search: string): void {
+      const promise = async () => {
+        setFromSearchStatus("LOADING");
+        const data: SelectOptionList = [];
+
+        try {
+          const result = await getLocal(search);
+          setFromSearchStatus("DONE");
+          for (const item of result) {
+            if (item.id !== toSelected) {
+              data.push({
+                value: item.id,
+                label: item.name,
+              });
+            }
           }
+
+          setFromOptions(data);
+        } catch (error) {
+          onError();
+          console.error("error, search origin", error);
         }
-  
-        setFromOptions(data);
+      };
 
-      } catch (error) {
-        onError();
-        console.error('error, search origin', error);
-      }
-    };
+      promise();
+    },
+    [toSelected]
+  );
 
-    promise();
-  }, [toSelected]);
+  const onSearchTo = useCallback(
+    function (search: string): void {
+      const promise = async () => {
+        setToSearchStatus("LOADING");
 
-  const onSearchTo = useCallback(function (search: string): void {
-    const promise = async () => {
-      setToSearchStatus('LOADING');
+        const data: SelectOptionList = [];
+        try {
+          const result = await getLocal(search);
+          setToSearchStatus("DONE");
 
-      const data: SelectOptionList = [];
-      try {
-        const result = await getLocal(search);
-        setToSearchStatus('DONE');
-  
-        for (const item of result) {
-          if (item.id !== fromSelected) {
-            data.push({
-              value: item.id,
-              label: item.name,
-            });
+          for (const item of result) {
+            if (item.id !== fromSelected) {
+              data.push({
+                value: item.id,
+                label: item.name,
+              });
+            }
           }
-        }
-  
-        setToOptions(data);
-      } catch (error) {
-        onError();
-        console.error('error, search origin', error);
-      }
-    };
 
-    promise();
-  }, [fromSelected]);
+          setToOptions(data);
+        } catch (error) {
+          onError();
+          console.error("error, search origin", error);
+        }
+      };
+
+      promise();
+    },
+    [fromSelected]
+  );
 
   return (
     <div className="flex flex-col items-center bg-background-form rounded-md shadow-background-form shadow-md w-full max-h-[88vh] min-h-[48vh]">
@@ -176,7 +181,7 @@ export default function DistanceCalculator() {
             selectedValue={fromSelected}
             placeholder={"Search origin Airport..."}
             onSearch={onSearchFrom}
-            isLoading={fromSearchStatus === "LOADING"}
+            searchStatus={fromSearchStatus}
           />
         </div>
         <div className={inputCCS}>
@@ -186,7 +191,7 @@ export default function DistanceCalculator() {
             selectedValue={toSelected}
             placeholder={"Search destination Airport..."}
             onSearch={onSearchTo}
-            isLoading={toSearchStatus === "LOADING"}
+            searchStatus={toSearchStatus}
           />
         </div>
       </div>

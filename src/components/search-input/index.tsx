@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import Dropdown from "../dropdown";
+import { RequestStatus } from "@/types/request-status";
 
 export default function SearchInput({
   options,
@@ -16,14 +17,14 @@ export default function SearchInput({
   onSelect,
   placeholder = "Search...",
   onSearch,
-  isLoading,
+  searchStatus,
 }: Readonly<{
   options: SelectOptionList;
   onSelect: (value: string) => void;
   selectedValue: string;
   placeholder?: string;
   onSearch: (search: string) => void;
-  isLoading: boolean;
+  searchStatus: RequestStatus;
 }>) {
   const [value, setValue] = useState("");
 
@@ -36,6 +37,16 @@ export default function SearchInput({
       setValue(options.find((e) => e.value === selectedValue)?.label ?? "");
     }
   }, [options, selectedValue]);
+
+  useEffect(() => {
+    if (searchStatus === "DONE") {
+      setShowDropdown(true);
+
+      return () => {
+        setShowDropdown(false);
+      };
+    }
+  }, [searchStatus]);
 
   useEffect(() => {
     if (value === "") {
@@ -74,10 +85,6 @@ export default function SearchInput({
   const handleOnChange: ChangeEventHandler<HTMLInputElement> = (event) => {
     setValue(event.target.value);
     onSelect("");
-
-    if (event.target.value.length >= 3) {
-      setShowDropdown(true);
-    }
   };
 
   const handleOnSetHighlighted = (index: number) => {
@@ -95,10 +102,10 @@ export default function SearchInput({
   }, [value]);
 
   useEffect(() => {
-    if (debouncedValue.length >= 3) {
+    if (debouncedValue.length >= 3 && !selectedValue) {
       onSearch(debouncedValue);
     }
-  }, [debouncedValue, onSearch]);
+  }, [debouncedValue, onSearch, selectedValue]);
 
   return (
     <div className="flex flex-col w-auto">
@@ -116,10 +123,15 @@ export default function SearchInput({
           onFocus={handleOnFocus}
         ></input>
         <div className="w-full relative">
+          {searchStatus === "LOADING" ? (
+            <div className="bg-foreground rounded-b-sm absolute w-full">
+              <p className="text-input p-4">Searching...</p>
+            </div>
+          ) : null}
           <Dropdown
             options={options}
             onSelect={onSelect}
-            show={!isLoading && showDropdown}
+            show={showDropdown}
             highlightedOption={highlightedOption}
             setHighlightedOption={handleOnSetHighlighted}
           />

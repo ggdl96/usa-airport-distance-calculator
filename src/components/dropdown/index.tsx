@@ -15,8 +15,8 @@ export default function Dropdown({
   highlightedOption: number;
   setHighlightedOption: (index: number) => void;
 }>) {
-  return show ? (
-    options.length ? (
+  if (show) {
+    return options.length ? (
       <ul className="bg-foreground rounded-b-sm absolute max-h-[30vh] overflow-y-scroll w-full">
         {options.map((item, index) => (
           <option
@@ -40,6 +40,7 @@ export default function Dropdown({
       <div className="bg-foreground rounded-b-sm absolute w-full">
         <p className="text-input p-4">No results</p>
       </div>
-    )
-  ) : null;
+    );
+  }
+  return null;
 }
