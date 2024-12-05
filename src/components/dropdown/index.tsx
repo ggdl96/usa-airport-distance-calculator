@@ -37,8 +37,8 @@ export default function Dropdown({
         ))}
       </ul>
     ) : (
-      <div>
-        <p>No results</p>
+      <div className="bg-foreground rounded-b-sm absolute w-full">
+        <p className="text-input p-4">No results</p>
       </div>
     )
   ) : null;
