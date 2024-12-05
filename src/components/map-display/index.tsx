@@ -21,7 +21,7 @@ const MapDisplay = ({
   if (isLoading) return <div>Loading...</div>;
 
   return (
-    <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={7}>
+    <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={5}>
       <Marker position={origin} label={{ ...labelStyles, text: originName }} />
       <Marker
         position={destination}
