@@ -29,6 +29,7 @@ export default function SearchInput({
 
   const [highlightedOption, setHighlightedOption] = useState(-1);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
     if (selectedValue) {
@@ -75,7 +76,6 @@ export default function SearchInput({
     onSelect("");
 
     if (event.target.value.length >= 3) {
-      onSearch(event.target.value);
       setShowDropdown(true);
     }
   };
@@ -83,6 +83,22 @@ export default function SearchInput({
   const handleOnSetHighlighted = (index: number) => {
     setHighlightedOption(index);
   };
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedValue(value.length >= 3 ? value : "");
+    }, 300);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [value]);
+
+  useEffect(() => {
+    if (debouncedValue.length >= 3) {
+      onSearch(debouncedValue);
+    }
+  }, [debouncedValue, onSearch]);
 
   return (
     <div className="flex flex-col w-auto">

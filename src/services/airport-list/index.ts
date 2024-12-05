@@ -187,7 +187,7 @@ export function getList(term: string): Promise<AirportList> {
         );
         resolve(response);
       } catch (error) {
-        console.log('error get list: ', error);
+        console.error('error get list: ', error);
         reject(reject);
       }
     }, 2000);

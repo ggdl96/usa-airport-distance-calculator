@@ -2,7 +2,7 @@
 
 import SearchInput from "@/components/search-input";
 import { SelectOptionList } from "@/types/select";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import MapDisplay from "../map-display";
 import {
   caclculateDistanceBetweenTwoPoints,
@@ -13,7 +13,7 @@ import useGoogleMaps from "@/hooks/useGoogleMaps";
 import { Coordinates } from "@/types/Geo";
 import { fetchCoordinates } from "@/utils/geo";
 import { getNameFromAirportCode } from "@/utils/airport";
-import { getList } from "@/services/airport-list";
+import { transformToAirports } from "@/mappers/airlabs";
 
 type Status = "LOADING" | "DONE" | "DEFAULT";
 
@@ -81,17 +81,6 @@ export default function DistanceCalculator() {
     }
   }, [coordinatesDestination, coordinatesOrigin]);
 
-  useEffect(() => {
-    const func = async () => {
-      try {
-      } catch (error) {
-        console.error("error", error);
-      }
-    };
-
-    func();
-  }, []);
-
   const handleOnSelectFrom = function (value: string): void {
     setFromSelected(value);
     setFromSelectedName(getNameFromAirportCode(fromOptions, value));
@@ -104,17 +93,30 @@ export default function DistanceCalculator() {
 
   const inputCCS = "w-full lg:w-1/2 p-2";
 
+  const getLocal = async (search: string) => {
+    const response = await fetch(`api/search?search=${search}`);
+
+    if (response.ok) {
+      const body = await response.json();
+
+      return transformToAirports(body);
+    }
+
+    return [];
+  }
+
   const onError = () => {
     console.error('there was an error requesting the airport list');
   };
 
-  const onSearchFrom = function (search: string): void {
+  const onSearchFrom = useCallback(function (search: string): void {
     const promise = async () => {
+
       setFromSearchStatus('LOADING');
       const data: SelectOptionList = [];
-
+      
       try {
-        const result = await getList(search);
+        const result = await getLocal(search);
         setFromSearchStatus('DONE');
         for (const item of result) {
           if (item.code !== toSelected) {
@@ -134,14 +136,15 @@ export default function DistanceCalculator() {
     };
 
     promise();
-  };
-  const onSearchTo = function (search: string): void {
+  }, [toSelected]);
+
+  const onSearchTo = useCallback(function (search: string): void {
     const promise = async () => {
       setToSearchStatus('LOADING');
 
       const data: SelectOptionList = [];
       try {
-        const result = await getList(search);
+        const result = await getLocal(search);
         setToSearchStatus('DONE');
   
         for (const item of result) {
@@ -161,7 +164,7 @@ export default function DistanceCalculator() {
     };
 
     promise();
-  };
+  }, [fromSelected]);
 
   return (
     <div className="flex flex-col items-center bg-background-form rounded-md shadow-background-form shadow-md w-full max-h-[88vh] min-h-[48vh]">
@@ -173,7 +176,7 @@ export default function DistanceCalculator() {
             selectedValue={fromSelected}
             placeholder={"Search origin Airport..."}
             onSearch={onSearchFrom}
-            isLoading={toSearchStatus === "LOADING"}
+            isLoading={fromSearchStatus === "LOADING"}
           />
         </div>
         <div className={inputCCS}>
@@ -183,7 +186,7 @@ export default function DistanceCalculator() {
             selectedValue={toSelected}
             placeholder={"Search destination Airport..."}
             onSearch={onSearchTo}
-            isLoading={fromSearchStatus === "LOADING"}
+            isLoading={toSearchStatus === "LOADING"}
           />
         </div>
       </div>
