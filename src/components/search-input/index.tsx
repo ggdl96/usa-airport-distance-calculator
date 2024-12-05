@@ -1,13 +1,21 @@
 "use client";
 
 import { SelectOptionList } from "@/types/select";
-import { KeyboardEventHandler, useEffect, useState } from "react";
+import {
+  ChangeEventHandler,
+  FocusEventHandler,
+  KeyboardEventHandler,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+import Dropdown from "../dropdown";
 
 export default function SearchInput({
   options,
   selectedValue,
   onSelect,
-  placeholder='Search...',
+  placeholder = "Search...",
 }: Readonly<{
   options: SelectOptionList;
   onSelect: (value: string) => void;
@@ -20,27 +28,33 @@ export default function SearchInput({
   );
 
   const [highlightedOption, setHighlightedOption] = useState(-1);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const displayOptions = useCallback(() => {
+    setOptionsToDisplay(
+      options.filter((item) => {
+        return (
+          item.value.toLowerCase().includes(value.toLowerCase()) ||
+          item.label.toLowerCase().includes(value.toLowerCase())
+        );
+      })
+    );
+  }, [options, value]);
   useEffect(() => {
     setValue(options.find((e) => e.value === selectedValue)?.label ?? "");
   }, [options, selectedValue]);
 
   useEffect(() => {
     if (value) {
-      setOptionsToDisplay(
-        options.filter((item) => {
-          return (
-            item.value.toLowerCase().includes(value.toLowerCase()) ||
-            item.label.toLowerCase().includes(value.toLowerCase())
-          );
-        })
-      );
+      displayOptions();
     }
-  }, [onSelect, options, value]);
+  }, [displayOptions, value]);
 
   useEffect(() => {
     if (value === "") {
       setOptionsToDisplay([]);
       onSelect("");
+      setShowDropdown(false);
     }
   }, [onSelect, value]);
 
@@ -55,11 +69,34 @@ export default function SearchInput({
       } else if (e.key === "Enter" && highlightedOption >= 0) {
         onSelect(optionsToDisplay[highlightedOption].value);
         setOptionsToDisplay([]);
+        setShowDropdown(false);
       } else if (e.key === "Escape") {
         setOptionsToDisplay([]);
         onSelect("");
+        setShowDropdown(false);
       }
     }
+  };
+
+  const handleOnFocus: FocusEventHandler<HTMLInputElement> = () => {
+    if (value && !selectedValue) {
+      displayOptions();
+      setShowDropdown(true);
+    }
+  };
+  const handleOnBlur: FocusEventHandler<HTMLInputElement> = () => {
+    setOptionsToDisplay([]);
+    setShowDropdown(false);
+  };
+
+  const handleOnChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+    setValue(event.target.value);
+    onSelect("");
+    setShowDropdown(true);
+  };
+
+  const handleOnSetHighlighted = (index: number) => {
+    setHighlightedOption(index);
   };
 
   return (
@@ -68,41 +105,23 @@ export default function SearchInput({
         <input
           className="rounded-md p-4 text-lg flex-1"
           value={value}
-          onChange={(event) => {
-            setValue(event.target.value);
-            onSelect("");
-          }}
+          onChange={handleOnChange}
           type="search"
           placeholder={placeholder}
-          onBlur={() => {
-            setOptionsToDisplay([]);
-          }}
+          onBlur={handleOnBlur}
           aria-autocomplete="list"
           aria-haspopup="listbox"
           onKeyDown={handleKeyDown}
+          onFocus={handleOnFocus}
         ></input>
       </div>
-      {optionsToDisplay.length && !selectedValue ? (
-        <ul className="bg-foreground rounded-b-sm">
-          {optionsToDisplay.map((item, index) => (
-            <option
-              className={`text-input p-4 ${
-                highlightedOption === index ? "bg-option-highlight" : ""
-              }`}
-              key={item.value}
-              onMouseDown={() => {
-                onSelect(item.value);
-              }}
-              aria-selected={highlightedOption === index}
-              onMouseEnter={() => {
-                setHighlightedOption(index);
-              }}
-            >
-              {item.label}
-            </option>
-          ))}
-        </ul>
-      ) : null}
+      <Dropdown
+        options={optionsToDisplay}
+        onSelect={onSelect}
+        show={showDropdown}
+        highlightedOption={highlightedOption}
+        setHighlightedOption={handleOnSetHighlighted}
+      />
     </div>
   );
 }
