@@ -13,6 +13,7 @@ import {
 import useGoogleMaps from "@/hooks/useGoogleMaps";
 import { Coordinates } from "@/types/Geo";
 import { fetchCoordinates } from "@/utils/geo";
+import { getNameFromAirportCode } from "@/utils/airport";
 
 interface Props {
   airportList: AirportList;
@@ -23,7 +24,9 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
   const [toOptions, setToOptions] = useState<SelectOptionList>([]);
 
   const [fromSelected, setFromSelected] = useState("");
+  const [fromSelectedName, setFromSelectedName] = useState("");
   const [toSelected, setToSelected] = useState("");
+  const [toSelectedName, setToSelectedName] = useState("");
 
   const [coordinatesOrigin, setCoordinatesOrigin] =
     useState<Coordinates | null>();
@@ -35,10 +38,9 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
 
   useEffect(() => {
     if (data.isLoaded) {
-      if (fromSelected && toSelected) {
+      if (fromSelectedName && toSelectedName) {
         fetchCoordinates(
-          airportList.find((airport) => airport.code === fromSelected)?.name ??
-            "",
+          fromSelectedName,
           (result, status) => {
             if (status === google.maps.GeocoderStatus.OK) {
               if (result) {
@@ -50,9 +52,9 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
             }
           }
         );
-  
+
         fetchCoordinates(
-          airportList.find((airport) => airport.code === toSelected)?.name ?? "",
+          toSelectedName,
           (result, status) => {
             if (status === google.maps.GeocoderStatus.OK) {
               if (result) {
@@ -71,7 +73,7 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
         };
       }
     }
-  }, [airportList, data.isLoaded, fromSelected, toSelected]);
+  }, [airportList, data.isLoaded, fromSelectedName, toSelectedName]);
 
   useEffect(() => {
     if (airportList.length) {
@@ -117,15 +119,25 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
 
     func();
   }, []);
+
+  const handleOnSelectFrom = function (value: string): void {
+    setFromSelected(value);
+    setFromSelectedName(getNameFromAirportCode(airportList, value));
+  };
+
+  const handleOnSelectTo = function (value: string): void {
+    setToSelected(value);
+    setToSelectedName(getNameFromAirportCode(airportList, value));
+
+  };
+
   return (
     <div className="flex flex-col justify-center items-center bg-background-form rounded-md shadow-background-form shadow-md w-full">
       <div className="flex flex-col sm:flex-row pb-4 w-full">
         <div className="w-full sm:w-1/2 p-2">
           <SearchInput
             options={fromOptions}
-            onSelect={function (value: string): void {
-              setFromSelected(value);
-            }}
+            onSelect={handleOnSelectFrom}
             selectedValue={fromSelected}
             placeholder={"Search origin Airport..."}
           />
@@ -133,9 +145,7 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
         <div className="w-full sm:w-1/2 p-2">
           <SearchInput
             options={toOptions}
-            onSelect={function (value: string): void {
-              setToSelected(value);
-            }}
+            onSelect={handleOnSelectTo}
             selectedValue={toSelected}
             placeholder={"Search destination Airport..."}
           />
@@ -153,7 +163,12 @@ export default function DistanceCalculator({ airportList }: Readonly<Props>) {
             origin={coordinatesOrigin}
             destination={coordinatesDestination}
             isLoading={!data.isLoaded}
-            center={calculateCenterOfTwoCoordinates(coordinatesDestination, coordinatesOrigin)}
+            center={calculateCenterOfTwoCoordinates(
+              coordinatesDestination,
+              coordinatesOrigin
+            )}
+            originName={fromSelectedName}
+            destinationName={toSelectedName}
           />
         </>
       ) : null}
