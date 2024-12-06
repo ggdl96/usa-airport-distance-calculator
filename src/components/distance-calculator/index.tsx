@@ -92,7 +92,7 @@ export default function DistanceCalculator() {
     setToSelectedName(getNameFromAirportCode(toOptions, value));
   };
 
-  const inputCCS = "w-full lg:w-1/2 p-2";
+  const inputCCS = "w-full sm:w-1/2 pb-2 pt-2 sm:p-2";
 
   const getLocal = async (search: string) => {
     const response = await fetch(`api/search?search=${search}`);
@@ -173,7 +173,7 @@ export default function DistanceCalculator() {
 
   return (
     <div className="flex flex-col items-center bg-background-form rounded-md shadow-background-form shadow-md w-full max-h-[88vh] min-h-[48vh]">
-      <div className="flex flex-col lg:flex-row pb-4 w-full flex-wrap lg:justify-center">
+      <div className="flex flex-col sm:flex-row pb-1 sm:pb-2 lg:pb-4 w-full flex-nowrap sm:justify-center">
         <div className={inputCCS}>
           <SearchInput
             options={fromOptions}
@@ -197,7 +197,7 @@ export default function DistanceCalculator() {
       </div>
       {distanceInMiles && coordinatesDestination && coordinatesOrigin ? (
         <>
-          <div className="pb-4">
+          <div className="pb-1 lg:pb-4">
             <h2 className="text-lg">Distance between airports:</h2>
             <p className="text-xl font-bold">{`${distanceInMiles.toFixed(
               2

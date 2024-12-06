@@ -111,7 +111,7 @@ export default function SearchInput({
     <div className="flex flex-col w-auto">
       <div className="flex w-auto flex-wrap">
         <input
-          className="rounded-md p-4 text-lg w-full"
+          className="rounded-md p-2 lg:p-4 text-lg w-full"
           value={value}
           onChange={handleOnChange}
           type="search"
