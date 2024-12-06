@@ -15,7 +15,7 @@ npm i
 
 ## Getting Started
 
-First, you will need to set up env variables
+First, you will need to set up env variables in a .env.local file
 
 ```text
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
