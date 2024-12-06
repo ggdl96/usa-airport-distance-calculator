@@ -190,6 +190,8 @@ export default function DistanceCalculator() {
     [originSelected]
   );
 
+  const placeholder = "Search airport by name or IATA/ICAO code";
+
   return (
     <div className="flex flex-col items-center bg-background-form rounded-md shadow-background-form shadow-md w-full max-h-[88vh] min-h-[48vh]">
       <ErrorDisplay
@@ -208,7 +210,7 @@ export default function DistanceCalculator() {
             options={originOptions}
             onSelect={handleOnSelectFrom}
             selectedValue={originSelected}
-            placeholder={"Search origin Airport..."}
+            placeholder={placeholder}
             onSearch={onSearchFrom}
             searchStatus={originSearchStatus}
           />
@@ -218,7 +220,7 @@ export default function DistanceCalculator() {
             options={destinationOptions}
             onSelect={handleOnSelectTo}
             selectedValue={destinationSelected}
-            placeholder={"Search destination Airport..."}
+            placeholder={placeholder}
             onSearch={onSearchTo}
             searchStatus={destinationSearchStatus}
           />
