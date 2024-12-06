@@ -18,6 +18,8 @@ export const transformToAirports = (response: unknown): AirportList => {
         id,
         iata_code: airport.iata_code ?? "",
         icao_code: airport.icao_code ?? "",
+        lat: airport.lat,
+        lng: airport.lng,
       });
     }
   }

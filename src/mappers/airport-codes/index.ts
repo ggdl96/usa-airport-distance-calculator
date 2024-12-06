@@ -10,6 +10,8 @@ export const transformToAirports = (response: unknown): AirportList => {
       id: airport.iata,
       iata_code: airport.iata,
       icao_code: '',
+      lat: 0,
+      lng: 0
     }));
   
     return airports;

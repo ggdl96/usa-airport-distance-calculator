@@ -11,64 +11,74 @@ import {
 } from "@/utils/distance-calculator";
 import useGoogleMaps from "@/hooks/useGoogleMaps";
 import { Coordinates } from "@/types/Geo";
-import { fetchCoordinates } from "@/utils/geo";
 import { getNameFromAirportCode } from "@/utils/airport";
 import { transformToAirports } from "@/mappers/airlabs";
 import { RequestStatus } from "@/types/request-status";
+import { AirportList } from "@/types/airport";
 
 export default function DistanceCalculator() {
-  const [fromOptions, setFromOptions] = useState<SelectOptionList>([]);
-  const [toOptions, setToOptions] = useState<SelectOptionList>([]);
-  const [toSearchStatus, setToSearchStatus] =
+  const [originOptions, setOriginOptions] = useState<SelectOptionList>([]);
+  const [destinationOptions, setDestinationOptions] =
+    useState<SelectOptionList>([]);
+  const [originAirports, setOriginAirports] = useState<AirportList>([]);
+  const [destinationAirports, setDestinationAirports] = useState<AirportList>(
+    []
+  );
+  const [destinationSearchStatus, setDestinationSearchStatus] =
     useState<RequestStatus>("DEFAULT");
-  const [fromSearchStatus, setFromSearchStatus] =
+  const [originSearchStatus, setOriginSearchStatus] =
     useState<RequestStatus>("DEFAULT");
 
-  const [fromSelected, setFromSelected] = useState("");
-  const [fromSelectedName, setFromSelectedName] = useState("");
-  const [toSelected, setToSelected] = useState("");
-  const [toSelectedName, setToSelectedName] = useState("");
+  const [originSelected, setOriginSelected] = useState("");
+  const [originSelectedName, setOriginSelectedName] = useState("");
+  const [destinationSelected, setDestinationSelected] = useState("");
+  const [destinationSelectedName, setDestinationSelectedName] = useState("");
 
   const [coordinatesOrigin, setCoordinatesOrigin] =
     useState<Coordinates | null>();
   const [coordinatesDestination, setCoordinatesDestination] =
     useState<Coordinates | null>();
   const [distanceInMiles, setDistanceInMiles] = useState(0);
+  const [displayError, setDisplayError] = useState({
+    display: false,
+    message: 'Unexpected Error',
+  });
 
   const data = useGoogleMaps();
 
   useEffect(() => {
-    if (data.isLoaded) {
-      if (fromSelectedName && toSelectedName) {
-        fetchCoordinates(fromSelectedName, (result, status) => {
-          if (status === google.maps.GeocoderStatus.OK) {
-            if (result) {
-              setCoordinatesOrigin({
-                lat: result[0].geometry.location.lat(),
-                lng: result[0].geometry.location.lng(),
-              });
-            }
-          }
-        });
+    if (originSelected && destinationSelected) {
+      const dataOrigin = originAirports.find(
+        (item) => item.id === originSelected
+      );
+      const dataDestination = destinationAirports.find(
+        (item) => item.id === destinationSelected
+      );
+      console.log('originSelected && destinationSelected', originSelected,destinationSelected);
+      console.log('dataOrigin && dataDestination', dataDestination,dataDestination);
 
-        fetchCoordinates(toSelectedName, (result, status) => {
-          if (status === google.maps.GeocoderStatus.OK) {
-            if (result) {
-              setCoordinatesDestination({
-                lat: result[0].geometry.location.lat(),
-                lng: result[0].geometry.location.lng(),
-              });
-            }
-          }
+      if (dataOrigin && dataDestination) {
+        setCoordinatesOrigin({
+          lat: dataOrigin?.lat,
+          lng: dataOrigin?.lng,
         });
-
-        return () => {
-          setCoordinatesDestination(null);
-          setCoordinatesOrigin(null);
-        };
+        setCoordinatesDestination({
+          lat: dataDestination?.lat,
+          lng: dataDestination?.lng,
+        });
+      } else {
+        setDisplayError({
+          display: false,
+          message: 'Unexpected Error',
+        });
       }
+
+      return () => {
+        setCoordinatesDestination(null);
+        setCoordinatesOrigin(null);
+      };
     }
-  }, [data.isLoaded, fromSelectedName, toSelectedName]);
+  }, [originSelected, destinationSelected, originAirports, destinationAirports]);
 
   useEffect(() => {
     if (coordinatesOrigin && coordinatesDestination) {
@@ -83,13 +93,15 @@ export default function DistanceCalculator() {
   }, [coordinatesDestination, coordinatesOrigin]);
 
   const handleOnSelectFrom = function (value: string): void {
-    setFromSelected(value);
-    setFromSelectedName(getNameFromAirportCode(fromOptions, value));
+    setOriginSelected(value);
+    setOriginSelectedName(getNameFromAirportCode(originOptions, value));
   };
 
   const handleOnSelectTo = function (value: string): void {
-    setToSelected(value);
-    setToSelectedName(getNameFromAirportCode(toOptions, value));
+    setDestinationSelected(value);
+    setDestinationSelectedName(
+      getNameFromAirportCode(destinationOptions, value)
+    );
   };
 
   const inputCCS = "w-full sm:w-1/2 pb-2 pt-2 sm:p-2";
@@ -113,14 +125,14 @@ export default function DistanceCalculator() {
   const onSearchFrom = useCallback(
     function (search: string): void {
       const promise = async () => {
-        setFromSearchStatus("LOADING");
+        setOriginSearchStatus("LOADING");
         const data: SelectOptionList = [];
 
         try {
           const result = await getLocal(search);
-          setFromSearchStatus("DONE");
+          setOriginAirports(result);
           for (const item of result) {
-            if (item.id !== toSelected) {
+            if (item.id !== destinationSelected) {
               data.push({
                 value: item.id,
                 label: item.name,
@@ -128,7 +140,8 @@ export default function DistanceCalculator() {
             }
           }
 
-          setFromOptions(data);
+          setOriginOptions(data);
+          setOriginSearchStatus("DONE");
         } catch (error) {
           onError();
           console.error("error, search origin", error);
@@ -137,21 +150,20 @@ export default function DistanceCalculator() {
 
       promise();
     },
-    [toSelected]
+    [destinationSelected]
   );
 
   const onSearchTo = useCallback(
     function (search: string): void {
       const promise = async () => {
-        setToSearchStatus("LOADING");
+        setDestinationSearchStatus("LOADING");
 
         const data: SelectOptionList = [];
         try {
           const result = await getLocal(search);
-          setToSearchStatus("DONE");
-
+          setDestinationAirports(result);
           for (const item of result) {
-            if (item.id !== fromSelected) {
+            if (item.id !== originSelected) {
               data.push({
                 value: item.id,
                 label: item.name,
@@ -159,7 +171,8 @@ export default function DistanceCalculator() {
             }
           }
 
-          setToOptions(data);
+          setDestinationOptions(data);
+          setDestinationSearchStatus("DONE");
         } catch (error) {
           onError();
           console.error("error, search origin", error);
@@ -168,30 +181,34 @@ export default function DistanceCalculator() {
 
       promise();
     },
-    [fromSelected]
+    [originSelected]
   );
 
   return (
     <div className="flex flex-col items-center bg-background-form rounded-md shadow-background-form shadow-md w-full max-h-[88vh] min-h-[48vh]">
+      {displayError.display ? <div className="w-full md:w-2/3 lg:1/2 bg-foreground absolute top-[50vh] justify-items-center p-4 rounded-md">
+        <h2 className="text-input text-lg font-bold">Error</h2>
+        <p className="text-error">{displayError.message}</p>
+      </div> : null}
       <div className="flex flex-col sm:flex-row pb-1 sm:pb-2 lg:pb-4 w-full flex-nowrap sm:justify-center">
         <div className={inputCCS}>
           <SearchInput
-            options={fromOptions}
+            options={originOptions}
             onSelect={handleOnSelectFrom}
-            selectedValue={fromSelected}
+            selectedValue={originSelected}
             placeholder={"Search origin Airport..."}
             onSearch={onSearchFrom}
-            searchStatus={fromSearchStatus}
+            searchStatus={originSearchStatus}
           />
         </div>
         <div className={inputCCS}>
           <SearchInput
-            options={toOptions}
+            options={destinationOptions}
             onSelect={handleOnSelectTo}
-            selectedValue={toSelected}
+            selectedValue={destinationSelected}
             placeholder={"Search destination Airport..."}
             onSearch={onSearchTo}
-            searchStatus={toSearchStatus}
+            searchStatus={destinationSearchStatus}
           />
         </div>
       </div>
@@ -211,8 +228,8 @@ export default function DistanceCalculator() {
               coordinatesDestination,
               coordinatesOrigin
             )}
-            originName={fromSelectedName}
-            destinationName={toSelectedName}
+            originName={originSelectedName}
+            destinationName={destinationSelectedName}
           />
         </>
       ) : null}
