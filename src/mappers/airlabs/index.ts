@@ -11,10 +11,11 @@ export const transformToAirports = (response: unknown): AirportList => {
     }`;
 
     if (!uniqueAirports.has(id)) {
+      const code =  airport.iata_code ?? airport.icao_code ?? "";
       uniqueAirports.add(id);
       list.push({
-        code: airport.iata_code ?? airport.icao_code ?? "",
-        name: airport.name,
+        code,
+        name: `${code} - ${airport.name}`,
         id,
         iata_code: airport.iata_code ?? "",
         icao_code: airport.icao_code ?? "",
