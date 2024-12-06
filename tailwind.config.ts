@@ -14,6 +14,7 @@ export default {
         'background-form': '#243c5a24',
         input: "var(--input)",
         'option-highlight': "#c3d5cb",
+        error: "#ad2323"
       },
     },
   },

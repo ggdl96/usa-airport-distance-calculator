@@ -15,6 +15,7 @@ import { getNameFromAirportCode } from "@/utils/airport";
 import { transformToAirports } from "@/mappers/airlabs";
 import { RequestStatus } from "@/types/request-status";
 import { AirportList } from "@/types/airport";
+import ErrorDisplay from "../error-display";
 
 export default function DistanceCalculator() {
   const [originOptions, setOriginOptions] = useState<SelectOptionList>([]);
@@ -41,10 +42,17 @@ export default function DistanceCalculator() {
   const [distanceInMiles, setDistanceInMiles] = useState(0);
   const [displayError, setDisplayError] = useState({
     display: false,
-    message: 'Unexpected Error',
+    message: "Unexpected Error",
   });
 
   const data = useGoogleMaps();
+
+  const onError = (message = "Unexpected Error") => {
+    setDisplayError({
+      display: true,
+      message,
+    });
+  };
 
   useEffect(() => {
     if (originSelected && destinationSelected) {
@@ -54,8 +62,6 @@ export default function DistanceCalculator() {
       const dataDestination = destinationAirports.find(
         (item) => item.id === destinationSelected
       );
-      console.log('originSelected && destinationSelected', originSelected,destinationSelected);
-      console.log('dataOrigin && dataDestination', dataDestination,dataDestination);
 
       if (dataOrigin && dataDestination) {
         setCoordinatesOrigin({
@@ -67,10 +73,7 @@ export default function DistanceCalculator() {
           lng: dataDestination?.lng,
         });
       } else {
-        setDisplayError({
-          display: false,
-          message: 'Unexpected Error',
-        });
+        onError();
       }
 
       return () => {
@@ -78,7 +81,12 @@ export default function DistanceCalculator() {
         setCoordinatesOrigin(null);
       };
     }
-  }, [originSelected, destinationSelected, originAirports, destinationAirports]);
+  }, [
+    originSelected,
+    destinationSelected,
+    originAirports,
+    destinationAirports,
+  ]);
 
   useEffect(() => {
     if (coordinatesOrigin && coordinatesDestination) {
@@ -118,10 +126,6 @@ export default function DistanceCalculator() {
     return [];
   };
 
-  const onError = () => {
-    console.error("there was an error requesting the airport list");
-  };
-
   const onSearchFrom = useCallback(
     function (search: string): void {
       const promise = async () => {
@@ -143,7 +147,8 @@ export default function DistanceCalculator() {
           setOriginOptions(data);
           setOriginSearchStatus("DONE");
         } catch (error) {
-          onError();
+          setOriginSearchStatus("ERROR");
+          onError('Error getting Origin Airports');
           console.error("error, search origin", error);
         }
       };
@@ -174,7 +179,8 @@ export default function DistanceCalculator() {
           setDestinationOptions(data);
           setDestinationSearchStatus("DONE");
         } catch (error) {
-          onError();
+          setDestinationSearchStatus("ERROR");
+          onError('Error getting Destination Airports');
           console.error("error, search origin", error);
         }
       };
@@ -186,10 +192,16 @@ export default function DistanceCalculator() {
 
   return (
     <div className="flex flex-col items-center bg-background-form rounded-md shadow-background-form shadow-md w-full max-h-[88vh] min-h-[48vh]">
-      {displayError.display ? <div className="w-full md:w-2/3 lg:1/2 bg-foreground absolute top-[50vh] justify-items-center p-4 rounded-md">
-        <h2 className="text-input text-lg font-bold">Error</h2>
-        <p className="text-error">{displayError.message}</p>
-      </div> : null}
+      <ErrorDisplay
+        display={displayError.display}
+        message={displayError.message}
+        onClose={() => {
+          setDisplayError({
+            message: '',
+            display: false,
+          })
+        }}
+      />
       <div className="flex flex-col sm:flex-row pb-1 sm:pb-2 lg:pb-4 w-full flex-nowrap sm:justify-center">
         <div className={inputCCS}>
           <SearchInput

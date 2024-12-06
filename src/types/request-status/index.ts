@@ -1,1 +1,1 @@
-export type RequestStatus = "LOADING" | "DONE" | "DEFAULT";
+export type RequestStatus = "LOADING" | "DONE" | "DEFAULT" | "ERROR";
