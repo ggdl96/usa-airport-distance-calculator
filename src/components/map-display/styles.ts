@@ -8,7 +8,7 @@ export const containerStyle = {
 
 export const labelStyles = {
   color: tailwindConfig.theme.extend.colors.input,
-  fontSize: "24px",
+  fontWeight: "bold",
 };
 
 export const lineStyles = {
